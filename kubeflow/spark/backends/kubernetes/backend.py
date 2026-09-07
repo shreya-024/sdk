@@ -334,7 +334,22 @@ class KubernetesBackend(RuntimeBackend):
         last_log_time = start_time
 
         while True:
-            info = self.get_session(name)
+            try:
+                info = self.get_session(name)
+            except Exception as e:
+                logger.warning(
+                    "Transient error getting session %s/%s, retrying: %s",
+                    self.namespace,
+                    name,
+                    e,
+                )
+                if time.monotonic() - start_time >= timeout:
+                    raise TimeoutError(
+                        f"Timeout waiting for {constants.SPARK_CONNECT_KIND} to be ready: "
+                        f"{self.namespace}/{name} (timeout: {timeout}s)"
+                    ) from e
+                time.sleep(polling_interval)
+                continue
 
             if info.state == SparkConnectState.READY:
                 logger.info(

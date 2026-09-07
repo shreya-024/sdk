@@ -627,12 +627,12 @@ def get_spark_connect_info_from_cr(
         raise ValueError(f"SparkConnect CR is invalid: {spark_connect_cr}")
 
     # Parse state
-    state = SparkConnectState.PROVISIONING
+    state = common_constants.UNKNOWN
     if spark_connect_cr.status and spark_connect_cr.status.state:
         try:
             state = SparkConnectState(spark_connect_cr.status.state)
         except ValueError:
-            state = SparkConnectState(common_constants.UNKNOWN)
+            state = common_constants.UNKNOWN
 
     # Extract server status
     server_status = None
